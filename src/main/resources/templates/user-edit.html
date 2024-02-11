@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html  xmlns:th="https://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit User Profile</title>
+</head>
+<body>
+<h2>Edit User Profile</h2>
+<form action="#" th:action="@{/admin/user-edit}" th:object="${user}" th:method="POST">
+    <label for="username">First name: </label>
+    <input type="text" th:field="*{username}" id="username" placeholder="Username">
+    <br>
+    <label for="password">Last name: </label>
+    <input type="text" th:field="*{password}" id="password" placeholder="Password">
+    <br>
+    <label for="age">age </label>
+    <input type="text" th:field="*{age}" id="age" placeholder="Age">
+    <br>
+    <label>Select role:
+        <input type="checkbox" name="roles"
+               th:each="role : ${roles}"
+               th:value="${role.getId()}"
+               th:text="${role.getName()}"
+               th:field="*{roles}"
+        />
+    </label>
+    <br>
+    <input type="submit" value="Create User">
+    <button type="submit">Save Changes</button>
+</form>
+</body>
+</html>
