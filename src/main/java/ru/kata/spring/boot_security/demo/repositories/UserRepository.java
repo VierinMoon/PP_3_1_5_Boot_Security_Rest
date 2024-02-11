@@ -10,12 +10,5 @@ import java.util.Optional;
 
 @Repository
 public interface UserRepository extends JpaRepository<User, Long> {
-    // Здесь могут быть дополнительные запросы, если они необходимы
-
-    @Query("SELECT u FROM User u JOIN FETCH u.roles WHERE u.username = :username")
-    Optional<User> findByUsernameAndFetchRolesEagerly(@Param("username") String username);
     User findByUsername(String username);
-
-
-    boolean existsByUsername(String admin);
 }

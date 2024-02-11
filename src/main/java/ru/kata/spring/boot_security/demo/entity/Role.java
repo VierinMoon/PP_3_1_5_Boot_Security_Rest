@@ -15,9 +15,6 @@ public class Role implements GrantedAuthority {
 
     private String name;
 
-    // Геттеры и сеттеры
-
-
     public Role() {
     }
 
@@ -34,7 +31,6 @@ public class Role implements GrantedAuthority {
         this.name = name;
     }
 
-    // Реализация метода GrantedAuthority
     @Override
     public String getAuthority() {
         return name;

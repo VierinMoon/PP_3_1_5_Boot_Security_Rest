@@ -1,28 +1,51 @@
 <!DOCTYPE html>
-<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity3">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="https://www.thymeleaf.org" >
 <head>
     <title>Spring Security Example</title>
 </head>
 <body>
-<h1>User, welcome spring boot security page!</h1>
+<h2>User, welcome spring boot security page!</h2>
 
-<h2>User List</h2>
-<table>
-    <thead>
+<h3>User List</h3>
+<table  border="1">
     <tr>
-        <th>ID</th>
-        <th>Username</th>
+        <th>Id</th>
+        <th>username</th>
+        <th>Password</th>
         <th>Age</th>
+        <th>Role</th>
     </tr>
-    </thead>
     <tbody>
     <tr th:each="user : ${users}">
-        <td th:text="${user.id}"></td>
-        <td th:text="${user.username}"></td>
-        <td th:text="${user.age}"></td>
+        <td th:text="${user.id}">id</td>
+        <td th:text="${user.username}">firstName</td>
+        <td th:text="${user.password}">lastName</td>
+        <td th:text="${user.age}">username</td>
+        <td>
+            <ul th:each="role: ${user.getRoles()}" th:text="${role.getName()}">role</ul>
+        </td>
+        <td>
+            <form th:action="@{/admin/user-edit}" method="GET">
+                <input type="hidden" name="id" th:value="*{user.id}" />
+                <button type="submit">Update</button>
+            </form>
+            <form th:action="@{/admin/remove}" th:method="POST">
+                <input type="hidden" name="id" th:value="${user.id}" />
+                <button type="submit">Delete</button>
+            </form>
+        </td>
+
     </tr>
     </tbody>
-
 </table>
+<br/>
+<form th:action="@{admin/user-create}" th:method="GET">
+    <button type="submit">Creat new user!</button>
+</form>
+
+<br/>
+<form th:action="@{/logout}">
+    <input type="submit" value="Logout"/>
+</form>
 </body>
 </html>

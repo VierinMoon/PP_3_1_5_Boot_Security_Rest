@@ -5,10 +5,12 @@ import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import ru.kata.spring.boot_security.demo.entity.Role;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.Size;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
@@ -21,10 +23,12 @@ public class User implements UserDetails {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, unique = true)
+    @Column(name="username")
+    @NotEmpty(message = "Username should not be empty")
+    @Size(min = 2, max = 30, message = "Name should be between 2 and 30 characters")
     private String username;
     private String password;
-    private int age; // Замена поля enabled на поле age
+    private int age;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @LazyCollection(LazyCollectionOption.EXTRA)
@@ -35,11 +39,9 @@ public class User implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id"))
     private Set<Role> roles = new HashSet<>();
 
-    // Конструкторы, геттеры и сеттеры
-
-
     public User() {
     }
+
 
     public User(String username, String password, int age, Set<Role> roles) {
         this.username = username;
@@ -48,9 +50,12 @@ public class User implements UserDetails {
         this.roles = roles;
     }
 
-    // Реализация методов UserDetails
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+        Set<SimpleGrantedAuthority> roles = new HashSet<>();
+        for (Role role : this.roles) {
+            roles.add(new SimpleGrantedAuthority(role.getName()));
+        }
         return roles;
     }
 
@@ -81,11 +86,9 @@ public class User implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        // Метод isEnabled теперь проверяет, что возраст пользователя больше  0
         return age >  0;
     }
 
-    // Геттер и сеттер для поля age
     public int getAge() {
         return age;
     }
