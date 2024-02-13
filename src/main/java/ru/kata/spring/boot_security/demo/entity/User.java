@@ -2,8 +2,6 @@ package ru.kata.spring.boot_security.demo.entity;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import org.hibernate.annotations.LazyCollection;
-import org.hibernate.annotations.LazyCollectionOption;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -15,6 +13,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "users")
@@ -31,7 +30,6 @@ public class User implements UserDetails {
     private int age;
 
     @ManyToMany(fetch = FetchType.LAZY)
-//    @LazyCollection(LazyCollectionOption.EXTRA)
     @Fetch(FetchMode.JOIN)
     @JoinTable(
             name = "user_roles",
@@ -87,6 +85,11 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return age >  0;
+    }
+    public Set<String> getRoleNames() {
+        return roles.stream()
+                .map(Role::getName)
+                .collect(Collectors.toSet());
     }
 
     public int getAge() {

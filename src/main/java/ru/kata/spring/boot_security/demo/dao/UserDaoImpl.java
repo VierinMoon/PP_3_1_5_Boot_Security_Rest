@@ -1,6 +1,5 @@
 package ru.kata.spring.boot_security.demo.dao;
 
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Repository;
 import ru.kata.spring.boot_security.demo.entity.User;
 
@@ -13,6 +12,10 @@ import java.util.List;
 public class UserDaoImpl implements UserDAO {
     @PersistenceContext
     private EntityManager entityManager;
+
+    public UserDaoImpl(EntityManager entityManager) {
+        this.entityManager = entityManager;
+    }
 
     @Override
     @Transactional
@@ -39,6 +42,7 @@ public class UserDaoImpl implements UserDAO {
     public void save(User user) {
         entityManager.persist(user);
     }
+
     @Override
     @Transactional
     public void updateUser(User user) {
