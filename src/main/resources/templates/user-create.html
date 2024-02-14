@@ -8,7 +8,6 @@
 <h2>Create New User</h2>
 <form action="#" th:action="@{/admin/user-create}" th:object="${user}" th:method="POST">
 
-    <!-- User details -->
     <label for="username">Username: </label>
     <input type="text" th:field="*{username}" id="username" placeholder="Username">
     <br>
@@ -19,21 +18,18 @@
     <input type="text" th:field="*{age}" id="age" placeholder="Age">
     <br>
 
-    <!-- Role selection -->
     <label>Select role:</label>
     <div>
         <label><input type="checkbox" name="roles" value="1"> Admin</label>
         <label><input type="checkbox" name="roles" value="2"> User</label>
-        <!-- Добавьте больше чекбоксов для других ролей -->
     </div>
     <button type="submit">Submit</button>
     <br>
 
-<!--    <input type="submit" value="Create User">-->
 </form>
 <br/>
-<form th:action="@{/logout}">
-    <input type="submit" value="Logout"/>
+<form th:method="POST" th:action="@{/logout}">
+    <input type="submit" value="Logout">
 </form>
 </body>
 </html>

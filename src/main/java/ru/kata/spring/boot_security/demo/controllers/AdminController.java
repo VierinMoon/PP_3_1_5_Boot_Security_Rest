@@ -43,10 +43,8 @@ public class AdminController {
 
     @PostMapping("/user-create")
     public String processCreateUserForm(@ModelAttribute("user") User user, @RequestParam("roles") Set<Long> roleIds, Model model) {
-        // Получите список объектов Role по ID
         Set<Role> roles = roleService.findByIds(roleIds);
         user.setRoles(roles);
-        // Сохраните пользователя и перенаправьте на страницу успеха
         userServiceImpl.save(user);
         return REDIRECT_TO_ADMIN;
     }
@@ -60,10 +58,8 @@ public class AdminController {
 
     @PostMapping("/user-edit")
     public String updateUser(@ModelAttribute("user") User user, @RequestParam("roles") Set<Long> roleIds, Model model) {
-        // Получите список объектов Role по ID
         Set<Role> roles = roleService.findByIds(roleIds);
         user.setRoles(roles);
-        // Обновите пользователя и сохраните изменения
         userServiceImpl.updateUser(user);
         return REDIRECT_TO_ADMIN;
     }
