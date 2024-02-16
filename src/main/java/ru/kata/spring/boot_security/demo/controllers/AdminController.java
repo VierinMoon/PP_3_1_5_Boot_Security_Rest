@@ -1,7 +1,11 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.entity.Role;
@@ -9,8 +13,8 @@ import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.services.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.services.UserServiceImpl;
 
+import java.security.Principal;
 import java.util.*;
-
 
 
 @Controller
@@ -28,8 +32,26 @@ public class AdminController {
     }
 
     @GetMapping("")
-    public String listUsers(Model model) {
+    public String listUsers(Model model, Principal principal) {
         model.addAttribute("users", userServiceImpl.getAllUsers());
+
+        // Получение имени пользователя и ролей
+        if (principal != null) {
+            String username = principal.getName();
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication.getPrincipal() instanceof UserDetails) {
+                UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+                List<String> roles = userDetails.getAuthorities().stream()
+                        .map(GrantedAuthority::getAuthority)
+                        .toList();
+
+                // Добавление имени пользователя и ролей в модель
+                model.addAttribute("username", username);
+                model.addAttribute("roles", roles);
+
+
+            }
+        }
         return "user-list";
     }
 
