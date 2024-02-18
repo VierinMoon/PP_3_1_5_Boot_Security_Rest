@@ -1,32 +1,24 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import ru.kata.spring.boot_security.demo.entity.Role;
 import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.services.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.services.UserServiceImpl;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.security.Principal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
-    private static final Logger logger = LoggerFactory.getLogger(AdminController.class);
     private static final String REDIRECT_TO_ADMIN = "redirect:/admin";
     private final UserServiceImpl userServiceImpl;
     private final RoleServiceImpl roleService;
@@ -72,16 +64,12 @@ public class AdminController {
 
     @PostMapping("/user-create")
     public String createUser(@ModelAttribute("user") User user, @RequestParam("roles") Set<Long> roleIds, Model model) {
-        // Получаем роли по идентификаторам
         Set<Role> roles = roleService.findByIds(roleIds);
 
-        // Устанавливаем роли для пользователя
         user.setRoles(roles);
 
-        // Сохраняем пользователя
         userServiceImpl.save(user);
 
-        // Перенаправляем пользователя обратно в админ-панель
         return REDIRECT_TO_ADMIN;
     }
 
@@ -89,8 +77,8 @@ public class AdminController {
     public String showUserEditForm(@RequestParam("id") Long id, Model model) {
         User user = userServiceImpl.showUserById(id);
         model.addAttribute("user", user);
-        model.addAttribute("allRoles", roleService.getAllRoles()); // Добавляем все роли в модель
-        return "user-edit"; // Возвращаем имя представления
+        model.addAttribute("allRoles", roleService.getAllRoles());
+        return "user-edit";
     }
 
     @PostMapping("/user-edit")
@@ -98,22 +86,12 @@ public class AdminController {
         Set<Role> roles = roleService.findByIds(roleIds);
         user.setRoles(roles);
         userServiceImpl.updateUser(user);
-        return "redirect:/admin"; // Перенаправляем пользователя обратно на страницу администратора
+        return REDIRECT_TO_ADMIN;
     }
 
-    //new method
-
-    //----------
-    @GetMapping("/remove")
+    @PostMapping("/remove")
     public String removeUser(@RequestParam("id") Long id) {
         userServiceImpl.deleteUser(id);
         return REDIRECT_TO_ADMIN;
     }
-
-//    @GetMapping(value = "/{id}/delete_user")
-//    public String deleteUserById(@PathVariable Long id) {
-//        userServiceImpl.deleteUser(id);
-//        return REDIRECT_TO_ADMIN;
-//    }
-
 }

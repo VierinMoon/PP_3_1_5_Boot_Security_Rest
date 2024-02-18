@@ -1,6 +1,5 @@
 <form id="userEditForm" th:action="@{/admin/user-edit}" method="post" th:object="${user}">
     <input type="hidden" th:field="*{id}" />
-    <!-- Поля формы -->
     <div class="form-group text-center" style="margin-bottom:   10px;">
         <label for="username">Username:</label>
         <input type="text" class="form-control" style="width:   400px;" id="username" name="username" th:field="*{username}" placeholder="Enter username">

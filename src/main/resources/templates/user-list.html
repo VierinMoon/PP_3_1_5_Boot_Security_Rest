@@ -148,9 +148,13 @@
                                                 </form>
                                             </td>
                                             <td>
-                                                <form class="delete-user-button" th:action="@{/admin/remove}" method="GET">
+                                                <form class="delete-user-button" th:action="@{/admin/remove}" method="POST">
                                                     <input type="hidden" name="id" th:value="${user.id}" />
-                                                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                                                    <input type="hidden" name="username" th:value="${user.username}" />
+                                                    <input type="hidden" name="password" th:value="${user.password}" /> <!-- Добавляем скрытое поле для пароля -->
+                                                    <input type="hidden" name="age" th:value="${user.age}" />
+                                                    <input type="hidden" name="roles" th:value="${user.roles}" />
+                                                    <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal">Delete</button>
                                                 </form>
                                             </td>
                                         </tr>
@@ -184,6 +188,48 @@
                                         </div>
                                     </form>
                                 </div>
+                                    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                                        <div class="modal-dialog" role="document">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title" id="deleteModalLabel">Delete User</h5>
+                                                    <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">&times;</span>
+                                                    </button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p id="confirmation-text"></p>
+                                                    <form id="userDeleteForm" th:action="@{/admin/remove}" method="post" th:object="${user}">
+                                                        <input type="hidden" th:field="*{id}" />
+                                                        <!-- Поля формы -->
+                                                        <div class="form-group text-center" style="margin-bottom:  10px;">
+                                                            <label for="username">Username:</label>
+                                                            <input type="text" class="form-control" style="width:  400px;" id="username" name="username" th:field="*{username}" placeholder="Enter username" readonly>
+                                                        </div>
+                                                        <div class="form-group text-center" style="margin-bottom:  10px;">
+                                                            <label for="password">Password:</label>
+                                                            <input type="password" class="form-control" style="width:  400px;" id="password" name="password" th:field="*{password}" placeholder="Enter password" readonly>
+                                                        </div>
+                                                        <div class="form-group text-center" style="margin-bottom:  10px;">
+                                                            <label for="age">Age:</label>
+                                                            <input type="number" class="form-control" style="width:  400px;" id="age" name="age" th:field="*{age}" placeholder="Enter age" readonly>
+                                                        </div>
+                                                        <div class="form-group text-center" style="margin-bottom:  10px;">
+                                                            <label for="roles">Roles:</label>
+                                                            <select multiple class="form-control" style="width:   400px; height:  50px;" id="usersRoles" name="roles" disabled>
+                                                                <option value="1">Admin</option>
+                                                                <option value="2">User</option>
+                                                            </select>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="button" class="btn btn-danger" id="confirm-delete">Delete</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                     <div id="userEditModal" class="modal" tabindex="-1">
                                         <div class="modal-dialog">
                                             <div class="modal-content">
@@ -192,10 +238,10 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                                 </div>
                                                 <div class="modal-body">
-                                                    <!-- Здесь будет вставлена форма редактирования пользователя -->
+
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
                                                     <button type="submit" class="btn btn-primary" form="userEditForm">Edit</button>
                                                 </div>
                                             </div>
@@ -217,87 +263,99 @@
 
 <script>
     $(document).ready(function() {
+        $('.delete-user-button button').on('click', function(event) {
+            event.preventDefault();
+            var form = $(this).closest('form');
+            var id = form.find('input[name="id"]').val();
+            var username = form.find('input[name="username"]').val();
+            var password = form.find('input[name="password"]').val();
+            var age = form.find('input[name="age"]').val();
+            var roles = form.find('input[name="roles"]').val();
+
+            $('#confirmation-text').text('Are you sure you want to delete user with ID: ' + id + ' and username: ' + username + '?');
+            $('#username').val(username);
+            $('#password').val(password);
+            $('#age').val(age);
+            $('#roles').val(roles).trigger('change');
+
+            $('#deleteModal').modal('show');
+        });
+
+        $('#confirm-delete').on('click', function() {
+            $('.delete-user-button').submit();
+        });
 
         $("#userTable").on('click', '.update-user-button', function (event) {
             event.preventDefault(); // Предотвращаем стандартную отправку формы
-            var userId = $(this).closest('form').find('input[name="id"]').val(); // Получаем ID пользователя из скрытого поля формы
-            openUserEditModal(userId); // Вызываем функцию openUserEditModal
+            var userId = $(this).closest('form').find('input[name="id"]').val();
+            openUserEditModal(userId);
         });
 
-        // Функция для открытия модального окна редактирования пользователя
         function openUserEditModal(userId) {
             $.ajax({
-                url: '/admin/user-edit', // Измените URL на новый метод контроллера
+                url: '/admin/user-edit',
                 type: 'GET',
-                data: { id: userId },
-                success: function(response) {
-                    // Заменяем содержимое контейнера модального окна на полученный HTML-фрагмент
-                    $("#userEditModal .modal-body").html(response); // Измените селектор, чтобы вставлять форму в тело модального окна
-                    // Открываем модальное окно
+                data: {id: userId},
+                success: function (response) {
+
+                    $("#userEditModal .modal-body").html(response);
+
                     $("#userEditModal").modal('show');
                 },
-                error: function(jqXHR, textStatus, errorThrown) {
+                error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error loading user edit form:', textStatus, errorThrown);
                 }
             });
         }
 
-        // Обработчик события на кнопку "Submit" в модальном окне
         $('#userEditModal').on('submit', '#userEditForm', function (event) {
-            event.preventDefault(); // Предотвращаем стандартную отправку формы
+            event.preventDefault();
 
-            var formData = $(this).serialize(); // Сериализуем данные формы
+            var formData = $(this).serialize();
 
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
                 data: formData,
                 success: function (response) {
-                    // Обработка успешного обновления пользователя
-                    $("#userEditModal").modal('hide'); // Закрываем модальное окно
-                    // Обновляем таблицу пользователей или перенаправляем на другую страницу
-                    location.reload(); // Перезагружаем страницу для обновления данных
+
+                    $("#userEditModal").modal('hide');
+
+                    location.reload();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error updating user:', textStatus, errorThrown);
-                    // Обработка ошибки обновления пользователя
-                    // ... ваш код для обработки ошибок ...
                 }
             });
         });
 
-        // Обработчик события на кнопку "New User"
+
         $("#newUserButton").click(function () {
-            // Показываем форму добавления нового пользователя
+
             $("#newUserFormContainer").show();
-            // Скрываем таблицу пользователей
+
             $("#usersTableContainer").hide();
-            // Обновляем текст заголовка
+
             $(".card-title").text("Add New User");
         });
 
-        // Обработчик события на кнопку "Users Table"
         $("#showUsersTable").click(function () {
-            // Показываем таблицу пользователей
             $("#usersTableContainer").show();
-            // Скрываем форму добавления нового пользователя
             $("#newUserFormContainer").hide();
-            // Обновляем текст заголовка
             $(".card-title").text("All Users");
         });
 
-        // Обработчик события на кнопку "Submit" в форме добавления нового пользователя
         $('#newUserForm').submit(function (event) {
-            event.preventDefault(); // Предотвращаем стандартную отправку формы
+            event.preventDefault();
 
-            var formData = $(this).serialize(); // Сериализуем данные формы
+            var formData = $(this).serialize();
 
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
                 data: formData,
                 success: function (response) {
-                    // Создаем новый Toast с сообщением об успехе
+
                     var toastHTML = '<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top:   0; right:   0;">' +
                         '<div class="toast-header">' +
                         '<strong class="me-auto">Success</strong>' +
@@ -309,31 +367,27 @@
                         '</div>' +
                         '</div>';
 
-                    // Добавляем Toast в DOM
+
                     $('body').append(toastHTML);
 
-                    // Показываем Toast
                     var toastEl = document.querySelector('.toast');
                     var toast = new bootstrap.Toast(toastEl);
                     toast.show();
 
-                    // Обновляем таблицу пользователей или перенаправляем на другую страницу
-                    location.reload(); // Перезагружаем страницу для обновления данных
+                    location.reload();
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     console.error('Error adding new user:', textStatus, errorThrown);
-                    // Здесь можно также добавить вспывающее сообщение об ошибке
                 }
             });
         });
 
-        // Обработчики для переключения ролей
         $('.btn-toggle').on('click', function () {
             $('.btn-toggle').removeClass('active');
             $(this).addClass('active');
         });
 
-        // Обработчики для перехода по ссылкам
+
         $('#adminRole').click(function () {
             window.location.href = '/admin';
         });
@@ -342,7 +396,6 @@
             window.location.href = '/user';
         });
     });
-
 </script>
 </body>
 </html>
