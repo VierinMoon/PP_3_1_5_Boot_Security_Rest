@@ -66,8 +66,8 @@
         }
         .btn-toggle.active {
             background-color: #fff;
-            border:  1px solid #fff;
-            color: #000;
+            border:  none;
+            color:#6c757d;
         }
         table tbody tr:nth-child(odd) {
             background-color: #f2f2f2 !important;
@@ -83,8 +83,8 @@
         <div class="container-fluid">
            <span class="navbar-brand mb-0 h1">Welcome, <span th:text="${username}">username</span> with roles:
                <span th:each="role : ${roles}">
-                   <span th:utext="${role.replace('ROLE_', '')}"></span>
-                    <span th:text="' '"></span>
+                   <span th:utext="${role.toString().substring(5)}"></span>
+                   <span th:text="' '"></span>
                </span>
            </span>
             <form th:method="POST" th:action="@{/logout}" class="d-inline">
@@ -104,8 +104,8 @@
                     <div class="col-md-12 text-left">
                         <h2 class="mb-4">Admin panel</h2>
                         <div class="btn-group" role="group">
-                            <button type="button" class="btn btn-secondary btn-toggle active" id="showUsersTable">Users Table</button>
-                            <a href="/admin/user-create" class="btn btn-secondary btn-toggle inactive" id="newUserButton">New User</a>
+                            <button type="button" class="btn btn-secondary btn-toggle inactive" id="showUsersTable">Users Table</button>
+                            <button type="button" class="btn btn-secondary btn-toggle inactive" id="newUserButton" data-url="/admin/user-create">New User</button>
                         </div>
                     </div>
                 </div>
@@ -116,7 +116,6 @@
                                 <h5 class="card-title mb-0">All users</h5>
                             </div>
                             <div class="card-body">
-                                <!-- Таблица пользователей -->
                                 <div id="usersTableContainer" style="display: block;">
                                     <table class="table table-hover table-bordered table-responsive my-custom-table" id="userTable">
                                         <thead class="thead-dark">
@@ -137,11 +136,14 @@
                                             <td th:text="${user.password}">lastName</td>
                                             <td th:text="${user.age}">username</td>
                                             <td>
-                                                <ul th:each="role: ${user.getRoles()}" th:text="${role.getName()}">role</ul>
+                                                <span th:each="role, stat : ${user.getRoles()}">
+                                                    <span th:if="${stat.count >   1}" th:text="' '"></span>
+                                                    <span th:text="${role.getName().substring(5)}"></span>
+                                                </span>
                                             </td>
                                             <td>
-                                                <form th:action="@{/admin/user-edit}" method="GET">
-                                                    <input type="hidden" name="id" th:value="*{user.id}" />
+                                                <form class="update-user-button" th:action="@{/admin/user-edit}" method="GET">
+                                                    <input type="hidden" name="id" th:value="${user.id}" />
                                                     <button type="submit" class="btn btn-sm btn-primary">Update</button>
                                                 </form>
                                             </td>
@@ -155,37 +157,193 @@
                                         </tbody>
                                     </table>
                                 </div>
-                                    <div id="newUserFormContainer" style="display: none;">
-                                        <form th:action="@{/admin/user-create}" th:method="GET">
-                                        <button type="submit" class="btn btn-sm btn-success">New User!</button>
-                                        </form>
+                                <div class="d-flex justify-content-center align-items-center" style="height:  100%;">
+                                <div id="newUserFormContainer" style="display: none;">
+                                    <form id="newUserForm" action="/admin/user-create" th:action="@{/admin/user-create}" th:object="${user}" th:method="POST">
+                                        <div class="form-group text-center" style="margin-bottom:   10px;">
+                                            <label for="username">Username:</label>
+                                            <input type="text" class="form-control" style="width:   400px;" id="editUsername" name="username" placeholder="Enter username">
+                                        </div>
+                                        <div class="form-group text-center" style="margin-bottom:   10px;">
+                                            <label for="password">Password:</label>
+                                            <input type="password" class="form-control" style="width:   400px;" id="editPassword" name="password" placeholder="Enter password">
+                                        </div>
+                                        <div class="form-group text-center" style="margin-bottom:   10px;">
+                                            <label for="age">Age:</label>
+                                            <input type="number" class="form-control" style="width:   400px;" id="editAge" name="age" placeholder="Enter age">
+                                        </div>
+                                        <div class="form-group text-center" style="margin-bottom:   10px;">
+                                            <label for="roles">Roles:</label>
+                                            <select multiple class="form-control" style="width:   400px; height:  50px;" id="editRoles" name="roles">
+                                                <option value="1">Admin</option>
+                                                <option value="2">User</option>
+                                            </select>
+                                        </div>
+                                        <div class="text-center" style="margin-bottom:   10px;">
+                                            <button type="submit" class="btn btn-success">Add new user</button>
+                                        </div>
+                                    </form>
+                                </div>
+                                    <div id="userEditModal" class="modal" tabindex="-1">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <h5 class="modal-title">Update User</h5>
+                                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <!-- Здесь будет вставлена форма редактирования пользователя -->
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                    <button type="submit" class="btn btn-primary" form="userEditForm">Edit</button>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                             </div>
                         </div>
+                        </div>
                     </div>
-
             </div>
         </div>
     </div>
 </div>
+
+
 <script src="/webjars/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
     $(document).ready(function() {
-        $('#adminRole').click(function() {
-            window.location.href = '/admin';
+
+        // Обработчик события на кнопку "Update User" в таблице пользователей
+        $("#userTable").on('click', '.update-user-button', function (event) {
+            event.preventDefault(); // Предотвращаем стандартную отправку формы
+            var userId = $(this).closest('form').find('input[name="id"]').val(); // Получаем ID пользователя из скрытого поля формы
+            openUserEditModal(userId); // Вызываем функцию openUserEditModal
         });
 
-        $('#userRole').click(function() {
-            window.location.href = '/user';
+        // Функция для открытия модального окна редактирования пользователя
+        function openUserEditModal(userId) {
+            $.ajax({
+                url: '/admin/user-edit',
+                type: 'GET',
+                data: { id: userId },
+                success: function(response) {
+                    // Заменяем содержимое контейнера модального окна на полученный HTML-фрагмент
+                    $("#userEditModal").html(response);
+                    // Открываем модальное окно
+                    $("#userEditModal").modal('show');
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    console.error('Error loading user edit form:', textStatus, errorThrown);
+                }
+            });
+        }
+
+        // Обработчик события на кнопку "Submit" в модальном окне
+        $('#userEditModal').on('submit', '#userEditForm', function (event) {
+            event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+            var formData = $(this).serialize(); // Сериализуем данные формы
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    // Обработка успешного обновления пользователя
+                    $("#userEditModal").modal('hide'); // Закрываем модальное окно
+                    // Обновляем таблицу пользователей или перенаправляем на другую страницу
+                    location.reload(); // Перезагружаем страницу для обновления данных
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Error updating user:', textStatus, errorThrown);
+                    // Обработка ошибки обновления пользователя
+                    // ... ваш код для обработки ошибок ...
+                }
+            });
         });
 
-        $('.btn-toggle').on('click', function() {
+        // Обработчик события на кнопку "New User"
+        $("#newUserButton").click(function () {
+            // Показываем форму добавления нового пользователя
+            $("#newUserFormContainer").show();
+            // Скрываем таблицу пользователей
+            $("#usersTableContainer").hide();
+            // Обновляем текст заголовка
+            $(".card-title").text("Add New User");
+        });
+
+        // Обработчик события на кнопку "Users Table"
+        $("#showUsersTable").click(function () {
+            // Показываем таблицу пользователей
+            $("#usersTableContainer").show();
+            // Скрываем форму добавления нового пользователя
+            $("#newUserFormContainer").hide();
+            // Обновляем текст заголовка
+            $(".card-title").text("All Users");
+        });
+
+        // Обработчик события на кнопку "Submit" в форме добавления нового пользователя
+        $('#newUserForm').submit(function (event) {
+            event.preventDefault(); // Предотвращаем стандартную отправку формы
+
+            var formData = $(this).serialize(); // Сериализуем данные формы
+
+            $.ajax({
+                url: $(this).attr('action'),
+                type: 'POST',
+                data: formData,
+                success: function (response) {
+                    // Создаем новый Toast с сообщением об успехе
+                    var toastHTML = '<div class="toast" role="alert" aria-live="assertive" aria-atomic="true" style="position: absolute; top:   0; right:   0;">' +
+                        '<div class="toast-header">' +
+                        '<strong class="me-auto">Success</strong>' +
+                        '<small>Just now</small>' +
+                        '<button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>' +
+                        '</div>' +
+                        '<div class="toast-body">' +
+                        'New user has been added successfully.' +
+                        '</div>' +
+                        '</div>';
+
+                    // Добавляем Toast в DOM
+                    $('body').append(toastHTML);
+
+                    // Показываем Toast
+                    var toastEl = document.querySelector('.toast');
+                    var toast = new bootstrap.Toast(toastEl);
+                    toast.show();
+
+                    // Обновляем таблицу пользователей или перенаправляем на другую страницу
+                    location.reload(); // Перезагружаем страницу для обновления данных
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    console.error('Error adding new user:', textStatus, errorThrown);
+                    // Здесь можно также добавить вспывающее сообщение об ошибке
+                }
+            });
+        });
+
+        // Обработчики для переключения ролей
+        $('.btn-toggle').on('click', function () {
             $('.btn-toggle').removeClass('active');
             $(this).addClass('active');
         });
+
+        // Обработчики для перехода по ссылкам
+        $('#adminRole').click(function () {
+            window.location.href = '/admin';
+        });
+
+        $('#userRole').click(function () {
+            window.location.href = '/user';
+        });
     });
+
 </script>
 </body>
 </html>
+
