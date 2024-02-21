@@ -151,7 +151,7 @@
                                                 <form class="delete-user-button" th:action="@{/admin/remove}" method="POST">
                                                     <input type="hidden" name="id" th:value="${user.id}" />
                                                     <input type="hidden" name="username" th:value="${user.username}" />
-                                                    <input type="hidden" name="password" th:value="${user.password}" /> <!-- Добавляем скрытое поле для пароля -->
+                                                    <input type="hidden" name="password" th:value="${user.password}" />
                                                     <input type="hidden" name="age" th:value="${user.age}" />
                                                     <input type="hidden" name="roles" th:value="${user.roles}" />
                                                     <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#deleteModal">Delete</button>
@@ -201,7 +201,6 @@
                                                     <p id="confirmation-text"></p>
                                                     <form id="userDeleteForm" th:action="@{/admin/remove}" method="post" th:object="${user}">
                                                         <input type="hidden" th:field="*{id}" />
-                                                        <!-- Поля формы -->
                                                         <div class="form-group text-center" style="margin-bottom:  10px;">
                                                             <label for="username">Username:</label>
                                                             <input type="text" class="form-control" style="width:  400px;" id="username" name="username" th:field="*{username}" placeholder="Enter username" readonly>
@@ -272,19 +271,20 @@
             var age = form.find('input[name="age"]').val();
             var roles = form.find('input[name="roles"]').val();
 
-            $('#confirmation-text').text('Are you sure you want to delete user with ID: ' + id + ' and username: ' + username + '?');
             $('#username').val(username);
             $('#password').val(password);
             $('#age').val(age);
-            $('#roles').val(roles).trigger('change');
+            $('#usersRoles').val(roles).trigger('change');
+
+            $('#userDeleteForm').find('input[name="id"]').val(id);
 
             $('#deleteModal').modal('show');
         });
 
         $('#confirm-delete').on('click', function() {
-            $('.delete-user-button').submit();
+            var form = $('#deleteModal').find('form');
+            form.submit();
         });
-
         $("#userTable").on('click', '.update-user-button', function (event) {
             event.preventDefault(); // Предотвращаем стандартную отправку формы
             var userId = $(this).closest('form').find('input[name="id"]').val();
