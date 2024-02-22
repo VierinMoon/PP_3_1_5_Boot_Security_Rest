@@ -32,7 +32,6 @@ public class UserController {
         User user = userServiceImpl.findByUsername(principal.getName());
         model.addAttribute("user", user);
 
-        // Получение имени пользователя и ролей
         String username = principal.getName();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication.getPrincipal() instanceof UserDetails) {
@@ -41,12 +40,9 @@ public class UserController {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            // Добавление имени пользователя и ролей в модель
             model.addAttribute("username", username);
             model.addAttribute("roles", roles);
         }
-
-
 
         return "user-profile";
     }

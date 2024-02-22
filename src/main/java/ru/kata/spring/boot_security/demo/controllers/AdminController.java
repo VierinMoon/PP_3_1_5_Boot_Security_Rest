@@ -14,7 +14,6 @@ import ru.kata.spring.boot_security.demo.services.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.services.UserServiceImpl;
 import java.security.Principal;
 import java.util.*;
-//Test
 
 @Controller
 @RequestMapping("/admin")
