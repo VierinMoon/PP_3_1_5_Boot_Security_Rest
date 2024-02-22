@@ -1,5 +1,6 @@
 package ru.kata.spring.boot_security.demo.controllers;
 
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -8,6 +9,8 @@ import ru.kata.spring.boot_security.demo.entity.User;
 import ru.kata.spring.boot_security.demo.services.RoleServiceImpl;
 import ru.kata.spring.boot_security.demo.services.UserServiceImpl;
 
+
+import javax.validation.Valid;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
@@ -19,44 +22,41 @@ public class AdminRestController {
     private final UserServiceImpl userService;
     private final RoleServiceImpl roleService;
 
-    public AdminRestController(UserServiceImpl userService, RoleServiceImpl roleService) {
-        this.userService = userService;
-        this.roleService = roleService;
+    public AdminRestController(UserServiceImpl userServiceImpl, RoleServiceImpl roleServiceImpl) {
+        this.userService = userServiceImpl;
+        this.roleService = roleServiceImpl;
     }
 
     @GetMapping
-    public ResponseEntity<List<User>> listUsers() {
+    public ResponseEntity<List<User>> showAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> showOneUser(@PathVariable("id") Long id) {
+    public ResponseEntity<User> getUserById(@PathVariable("id") Long id) {
         User user = userService.showUserById(id);
-        if (user == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
     @PostMapping
-    public ResponseEntity<HttpStatus> addNewUser(@RequestBody User newUser) {
+    public ResponseEntity<HttpStatus> addNewUser(@RequestBody @Valid User newUser) {
         userService.save(newUser);
         return ResponseEntity.ok(HttpStatus.CREATED);
     }
 
-    @PutMapping("/patch")
-    public ResponseEntity<Void> updateUser(@RequestBody User userFormWeb) {
-        userService.save(userFormWeb);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    @PutMapping
+    public ResponseEntity<HttpStatus> updateUser(@RequestBody @Valid User userFromWebPage) {
+        userService.updateUser(userFromWebPage);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable("id") Long id) {
+    public ResponseEntity<HttpStatus> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
-        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @GetMapping("/roles")
+    @GetMapping(value = "/roles")
     public ResponseEntity<Collection<Role>> getAllRoles() {
         return ResponseEntity.ok(roleService.getAllRoles());
     }
@@ -66,4 +66,5 @@ public class AdminRestController {
         User user = userService.findByUsername(principal.getName());
         return new ResponseEntity<>(user, HttpStatus.OK);
     }
+
 }
